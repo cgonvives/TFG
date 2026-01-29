@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AsFin - Portal Corporativo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="portal-body">
+    <nav class="portal-nav">
+        <div class="nav-logo">
+            <i class="fa-solid fa-building-columns"></i>
+            <span>AsFin</span>
+        </div>
+        <div class="nav-links">
+            <a href="#home">Inicio</a>
+            <a href="#solutions">Soluciones</a>
+            <a href="#about">Sobre Nosotros</a>
+            <a href="#contact">Contacto</a>
+            <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <header id="home" class="hero-section">
+        <div class="hero-content">
+            <h1>Impulsando el Futuro Financiero</h1>
+            <p>Soluciones estratégicas inteligentes para la toma de decisiones corporativas.</p>
+            <a href="#solutions" class="primary-btn">Explorar Soluciones</a>
+        </div>
+        <div class="hero-bg-accent"></div>
+    </header>
+
+    <section id="solutions" class="solutions-section">
+        <div class="section-title">
+            <h2>Nuestras Herramientas</h2>
+            <p>Acceso directo a nuestras plataformas de gestión interna.</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="solution-card glass-panel" onclick="window.location.href='optimizer.html'">
+                <div class="card-icon">
+                    <i class="fa-solid fa-chess-knight"></i>
+                </div>
+                <h3>Optimizador Estratégico</h3>
+                <p>Sistema avanzado de planificación y asignación de planes de acción basado en necesidades
+                    corporativas.</p>
+                <span class="card-link">Acceder <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+
+            <div class="solution-card glass-panel disabled">
+                <div class="card-icon">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <h3>Analítica Financiera</h3>
+                <p>Dashboard en tiempo real de KPIs y métricas de mercado. (Próximamente)</p>
+                <span class="card-link">En Desarrollo</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about-section glass-panel">
+        <div class="content-row">
+            <div class="text-col">
+                <h2>Sobre Nosotros</h2>
+                <p>En <strong>AsFin</strong>, nos dedicamos a transformar la complejidad financiera en claridad
+                    estratégica. Fundada en España, nuestra misión es dotar a las empresas de herramientas analíticas de
+                    vanguardia.</p>
+                <p>Nuestro equipo combina experiencia en consultoría financiera con la última tecnología en optimización
+                    matemática e inteligencia artificial.</p>
+            </div>
+            <div class="image-col">
+                <i class="fa-solid fa-users-viewfinder huge-icon"></i>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <h2>Contacto</h2>
+        <div class="contact-grid">
+            <div class="contact-item">
+                <i class="fa-solid fa-location-dot"></i>
+                <h3>Sede Central</h3>
+                <p>Paseo de la Castellana, 100<br>28046 Madrid, España</p>
+            </div>
+            <div class="contact-item">
+                <i class="fa-solid fa-envelope"></i>
+                <h3>Email</h3>
+                <p>info@asfin.es</p>
+            </div>
+            <div class="contact-item">
+                <i class="fa-solid fa-phone"></i>
+                <h3>Teléfono</h3>
+                <p>+34 912 345 678</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="portal-footer">
+        <p>&copy; 2026 AsFin. Reservados todos los derechos.</p>
+    </footer>
+    <script src="theme.js"></script>
+</body>
+
+</html>
