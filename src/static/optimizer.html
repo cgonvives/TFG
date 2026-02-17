@@ -8,16 +8,30 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.7">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/logo_barra_web.png">
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+            const isLight = savedTheme === 'light' || (!savedTheme && systemPrefersLight);
+            document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+        })();
+    </script>
 </head>
 
 <body>
     <div class="app-container">
         <header class="main-header">
-            <div class="logo-area">
-                <i class="fa-solid fa-chess-knight"></i>
-                <h1>Optimizador Estratégico</h1>
+            <div class="header-top">
+                <div class="logo-area">
+                    <i class="fa-solid fa-chess-knight"></i>
+                    <h1>Optimizador Estratégico</h1>
+                </div>
+                <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
             </div>
             <p class="subtitle">Sistema Inteligente de Planificación Corporativa</p>
         </header>
@@ -43,6 +57,21 @@
                 </div>
 
                 <div class="action-area">
+                    <div class="action-setup">
+                        <label for="planCountSelector"><i class="fa-solid fa-sliders"></i> Número de Acciones:</label>
+                        <select id="planCountSelector" class="plan-selector">
+                            <option value="1">1 Acción</option>
+                            <option value="2">2 Acciones</option>
+                            <option value="3" selected>3 Acciones</option>
+                            <option value="4">4 Acciones</option>
+                            <option value="5">5 Acciones</option>
+                            <option value="6">6 Acciones</option>
+                            <option value="7">7 Acciones</option>
+                            <option value="8">8 Acciones</option>
+                            <option value="9">9 Acciones</option>
+                            <option value="10">10 Acciones</option>
+                        </select>
+                    </div>
                     <button id="solveBtn" class="primary-btn pulse-animation">
                         <span class="btn-text">Generar Plan Óptimo</span>
                         <span class="btn-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
@@ -83,7 +112,8 @@
             <p>&copy; 2026 Sistema de Optimización Estratégica</p>
         </footer>
     </div>
-    <script src="optimizer.js"></script>
+    <script src="theme.js?v=1.7"></script>
+    <script src="optimizer.js?v=1.7"></script>
     <a href="index.html" class="back-home-btn"><i class="fa-solid fa-house"></i> Volver al Portal</a>
 </body>
 

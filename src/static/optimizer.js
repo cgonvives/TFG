@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const solveBtn = document.getElementById('solveBtn');
     const selectionCount = document.getElementById('selectionCount');
     const resultsSection = document.getElementById('resultsSection');
+    const planCountSelector = document.getElementById('planCountSelector');
 
     let allNeedsData = [];
 
@@ -123,10 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsSection.classList.add('hidden');
 
         try {
+            const selectedMaxActions = planCountSelector ? parseInt(planCountSelector.value) : 3;
+
+            const payload = {
+                selected_needs: selectedIds,
+                max_actions: selectedMaxActions
+            };
+            console.log('Sending solve request with max_actions:', selectedMaxActions);
+
             const response = await fetch('/solve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ selected_needs: selectedIds })
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -137,15 +146,55 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
             renderResults(result);
         } catch (error) {
-            alert('Error al ejecutar el optimizador: ' + error.message);
+            showError(error.message);
         } finally {
             solveBtn.disabled = false;
             solveBtn.innerHTML = originalText;
         }
     });
 
+    function showError(message) {
+        resultsSection.classList.remove('hidden');
+        resultsSection.innerHTML = `
+            <div class="glass-panel error-container" style="border-color: #ff6b6b; background: rgba(255, 107, 107, 0.05);">
+                <div class="section-header">
+                    <h2 style="color: #ff6b6b;"><i class="fa-solid fa-triangle-exclamation"></i> Error de Optimización</h2>
+                </div>
+                <div class="error-content" style="padding: 1rem; color: var(--text-main);">
+                    <p>${message}</p>
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">Sugerencia: Intenta aumentar el número de acciones permitidas o reducir la cantidad de necesidades seleccionadas.</p>
+                </div>
+            </div>
+        `;
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
     function renderResults(data) {
         const { objective_value, actions, assignments } = data;
+
+        resultsSection.innerHTML = `
+            <div class="glass-panel results-container">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-clipboard-check"></i> Plan Recomendado</h2>
+                    <div class="score-badge">
+                        <span class="label">Valor Objetivo</span>
+                        <span id="objectiveValue" class="value">0.0</span>
+                    </div>
+                </div>
+
+                <div class="results-content">
+                    <div class="actions-column">
+                        <h3>Acciones a Tomar</h3>
+                        <div id="actionsList" class="actions-list"></div>
+                    </div>
+
+                    <div class="assignments-column">
+                        <h3>Cobertura de Necesidades</h3>
+                        <div id="assignmentsList" class="assignments-list"></div>
+                    </div>
+                </div>
+            </div>
+        `;
 
         document.getElementById('objectiveValue').textContent = objective_value.toFixed(2);
 

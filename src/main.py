@@ -96,6 +96,7 @@ async def solve(request: SolveRequest):
     if not DATA_CACHE["needs"]:
          raise HTTPException(status_code=500, detail="Data not loaded properly.")
     
+    print(f"Solving with {len(request.selected_needs)} needs and max_actions={request.max_actions}")
     try:
         obj_val, actions, assigns = solve_optimization(
             selected_needs_ids=request.selected_needs,
@@ -114,11 +115,14 @@ async def solve(request: SolveRequest):
             "actions": actions,
             "assignments": assigns
         }
+    except ValueError as ve:
+        # Known feasibility or validation errors
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         import traceback
         error_detail = "".join(traceback.format_exception(type(e), e, e.__traceback__))
         print(error_detail) # also print to stderr
-        raise HTTPException(status_code=500, detail=error_detail)
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")
 
 # Mount Static Files (Frontend)
 # Must be last to not override API routes

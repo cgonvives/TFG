@@ -72,8 +72,8 @@ body {
 
 /* Theme Toggle Button */
 .theme-toggle {
-    background: transparent;
-    border: none;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
     color: var(--text-main);
     cursor: pointer;
     font-size: 1.2rem;
@@ -81,7 +81,30 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    backdrop-filter: blur(5px);
+}
+
+.theme-toggle.fixed-toggle {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.theme-toggle:not(.fixed-toggle) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+[data-theme="light"] .theme-toggle.fixed-toggle {
+    box-shadow: 0 4px 20px rgba(0, 100, 100, 0.15);
 }
 
 .theme-toggle:hover {
@@ -328,7 +351,20 @@ body {
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    margin-bottom: 0.5rem;
+}
+
+.header-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto 0.5rem;
+}
+
+.header-top .theme-toggle {
+    position: absolute;
+    right: 0;
 }
 
 .logo-area i {
@@ -341,8 +377,9 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    background: linear-gradient(135deg, #fff 0%, var(--primary-light) 100%);
+    background: linear-gradient(135deg, var(--h1-grad-start) 0%, var(--h1-grad-end) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -542,6 +579,46 @@ body {
 .action-area {
     margin-top: 2rem;
     text-align: center;
+}
+
+.action-setup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    animation: fadeIn 1.2s ease-out;
+}
+
+.action-setup label {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.plan-selector {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.plan-selector:hover,
+.plan-selector:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.plan-selector option {
+    background: var(--bg-card);
+    color: var(--text-main);
 }
 
 .primary-btn {

@@ -1,34 +1,52 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleBtn = document.getElementById('themeToggle');
-    const icon = toggleBtn.querySelector('i');
+(function () {
+    const applyTheme = (light, icon) => {
+        document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+        if (icon) {
+            icon.className = light ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+    };
 
-    // Check saved preference or system preference
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    const initTheme = () => {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        let isLight = savedTheme === 'light' || (!savedTheme && systemPrefersLight);
 
-    let isLight = savedTheme === 'light' || (!savedTheme && systemPrefersLight);
+        // Apply theme to document immediately (though the head script should have done this)
+        applyTheme(isLight);
 
-    // Apply initial state
-    if (isLight) {
-        document.documentElement.setAttribute('data-theme', 'light');
-        icon.className = 'fa-solid fa-moon'; // Inverted: Moon for Light (to switch to Dark)
-    } else {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        icon.className = 'fa-solid fa-sun'; // Inverted: Sun for Dark (to switch to Light)
-    }
+        const attachToggle = () => {
+            const toggleBtn = document.getElementById('themeToggle');
+            const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
 
-    // Toggle Event
-    toggleBtn.addEventListener('click', () => {
-        isLight = !isLight;
+            if (toggleBtn) {
+                // Update icon to match current state
+                applyTheme(isLight, icon);
 
-        if (isLight) {
-            document.documentElement.setAttribute('data-theme', 'light');
-            icon.className = 'fa-solid fa-moon';
-            localStorage.setItem('theme', 'light');
-        } else {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            icon.className = 'fa-solid fa-sun';
-            localStorage.setItem('theme', 'dark');
+                toggleBtn.onclick = (e) => {
+                    e.preventDefault();
+                    isLight = !isLight;
+                    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                    applyTheme(isLight, icon);
+                };
+            } else {
+                // If button not found, try again in a bit (for dynamic content or late rendering)
+                setTimeout(attachToggle, 100);
+            }
+        };
+
+        attachToggle();
+    };
+
+    // Sync across tabs
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'theme') {
+            initTheme();
         }
     });
-});
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTheme);
+    } else {
+        initTheme();
+    }
+})();
