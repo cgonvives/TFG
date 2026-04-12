@@ -3,6 +3,7 @@ import numpy as np
 from scipy.optimize import minimize
 import os
 import joblib
+from src.config import ML_DATASET_FINAL, LEARNED_HEURISTICS, ALPHA_DEFAULT, BETA_DEFAULT, GAMMA_DEFAULT, DELTA_DEFAULT
 
 def learn_optimal_weights(dataset_path):
     print(f"Loading dataset for weight learning: {dataset_path}")
@@ -17,7 +18,7 @@ def learn_optimal_weights(dataset_path):
     # is maximized for the chosen plans.
     
     # Initial weights
-    initial_params = [4.0, 3.0, 0.5, 1.0] # alpha, beta, gamma, delta
+    initial_params = [ALPHA_DEFAULT, BETA_DEFAULT, GAMMA_DEFAULT, DELTA_DEFAULT] # alpha, beta, gamma, delta
     
     # We will use a "Contrastive Loss" or "Rank Loss":
     # For each company and need, the chosen plan should have a higher score than NOT chosen ones.
@@ -69,15 +70,15 @@ def learn_optimal_weights(dataset_path):
     print(f"Delta (Complejidad):{learned_weights[3]:.2f}")
     
     # Save for optimizer use
-    os.makedirs("models", exist_ok=True)
+    os.makedirs(os.path.dirname(LEARNED_HEURISTICS), exist_ok=True)
     weights_dict = {
         'alpha': learned_weights[0],
         'beta': learned_weights[1],
         'gamma': learned_weights[2],
         'delta': learned_weights[3]
     }
-    joblib.dump(weights_dict, "models/learned_heuristics.pkl")
-    print("\nLearned weights saved to models/learned_heuristics.pkl")
+    joblib.dump(weights_dict, LEARNED_HEURISTICS)
+    print(f"\nLearned weights saved to {LEARNED_HEURISTICS}")
 
 if __name__ == "__main__":
     dataset_path = "data/ml_dataset_final.csv"

@@ -125,12 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const selectedMaxActions = planCountSelector ? parseInt(planCountSelector.value) : 3;
+            const objetoSocial = document.getElementById('objetoSocialInput')?.value || "";
 
             const payload = {
                 selected_needs: selectedIds,
-                max_actions: selectedMaxActions
+                max_actions: selectedMaxActions,
+                objeto_social: objetoSocial
             };
-            console.log('Sending solve request with max_actions:', selectedMaxActions);
+            console.log('Sending solve request with max_actions:', selectedMaxActions, 'and sector:', objetoSocial);
 
             const response = await fetch('/solve', {
                 method: 'POST',

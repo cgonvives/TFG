@@ -5,11 +5,10 @@ import json
 import os
 
 # Variables
-DATA_DIR = "data"
-files = os.listdir(DATA_DIR)
-target_file = next((f for f in files if "Planes de" in f and "v2" in f), "Planes de acción - TFG v2.xlsx")
-FILE_PATH = os.path.join(DATA_DIR, target_file)
-SAVE_PATH = "data/processed"
+from src.config import EXCEL_FILE, DATA_DIR, PROCESSED_BASE
+
+FILE_PATH = EXCEL_FILE
+SAVE_PATH = PROCESSED_BASE
 
 
 def load_data(file_path=None) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -315,6 +314,26 @@ def save_json(needs: dict, plans: dict, relations: dict, path: str) -> None:
     with open(f"{path}_relacion_necesidad_plan.json", "w") as f:
         json.dump(relations, f)
 
+
+def load_processed_data():
+    """
+    Loads the processed JSON data for needs, plans, and relations.
+    """
+    p_needs = f"{PROCESSED_BASE}_necesidades.json"
+    p_plans = f"{PROCESSED_BASE}_planes.json"
+    p_rels = f"{PROCESSED_BASE}_relacion_necesidad_plan.json"
+    
+    try:
+        with open(p_needs, "r", encoding="utf-8") as f:
+            needs = json.load(f)
+        with open(p_plans, "r", encoding="utf-8") as f:
+            plans = json.load(f)
+        with open(p_rels, "r", encoding="utf-8") as f:
+            relations = json.load(f)
+        return needs, plans, relations
+    except FileNotFoundError as e:
+        print(f"Error: JSON files not found in {data_dir}. Run data.py first.")
+        raise e
 
 if __name__ == "__main__":
     needs_df, plans_df = load_data(FILE_PATH)

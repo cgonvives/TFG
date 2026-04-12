@@ -11,43 +11,8 @@ from llm_classifier import classify_sector_llm
 if sys.stdout.encoding != 'utf-8':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-def clean_text(text):
-    if not isinstance(text, str): return ""
-    text = text.lower()
-    # Remove common legal prefixes
-    prefixes = ["la sociedad tiene por objeto", "objeto social:", "actividad principal", "la participacion.", "la explotacion", "cnae"]
-    for p in prefixes:
-        text = text.replace(p, "")
-    # Remove symbols and extra spaces
-    text = "".join([c if c.isalnum() or c.isspace() else " " for c in text])
-    return " ".join(text.split())
-    
-from utils import load_sector_cache, save_sector_cache
-import time
-
-# Global cache for sectors
-_sector_cache = load_sector_cache()
-
-def detect_sector(text):
-    """
-    Detects the industry sector using LLM classification.
-    """
-    if not text:
-        return "Otros"
-        
-    if text in _sector_cache:
-        return _sector_cache[text]
-        
-    try:
-        # Pacing: strictly stay under 15 RPM limit (1 call every 10s is safe)
-        time.sleep(10)
-        sector = classify_sector_llm(text)
-        if sector and sector != "Otros":
-            _sector_cache[text] = sector
-            save_sector_cache(_sector_cache)
-        return sector
-    except Exception:
-        return "Otros"
+from src.utils import clean_text, detect_sector
+from src.config import ML_DATASET_FINAL
 
 def explore_and_unify_data(file_path):
     # Print safe name
@@ -179,7 +144,7 @@ def explore_and_unify_data(file_path):
     # Combinar Positivos y Negativos
     df_final = pd.concat([df_unified, df_neg], ignore_index=True)
 
-    save_path = "data/ml_dataset_final.csv"
+    save_path = ML_DATASET_FINAL
     df_final.to_csv(save_path, index=False, encoding='utf-8')
     print(f"\nFinal ML dataset saved to {save_path}")
     print(f"Final shape: {df_final.shape}")

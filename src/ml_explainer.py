@@ -1,18 +1,18 @@
 import pandas as pd
 import numpy as np
-import shap
 import joblib
 import os
+import shap
 import matplotlib.pyplot as plt
-import src.ml_model_trainer as trainer
+from src.config import MODEL_XGB, VEC_SOCIAL, VEC_NEED, VEC_SECTOR, FEATURE_NAMES, DOC_DIR
 
 def generate_explanations(dataset_path):
     print(f"Loading data for explanation: {dataset_path}")
     df = pd.read_csv(dataset_path)
     
     # Load model and feature names
-    model = joblib.load("models/correction_model.pkl")
-    feature_names = joblib.load("models/feature_names.pkl")
+    model = joblib.load(MODEL_XGB)
+    feature_names = joblib.load(FEATURE_NAMES)
     
     # Prepare X (same as in trainer)
     # Note: We need the exact features the model was trained on
@@ -28,9 +28,9 @@ def generate_explanations(dataset_path):
     
     # Let's recreate X from the CSV using the models
     print("Reconstructing feature matrix for SHAP...")
-    vec_social = joblib.load("models/vec_social.pkl")
-    vec_need = joblib.load("models/vec_need.pkl")
-    sector_encoder = joblib.load("models/sector_encoder.pkl")
+    vec_social = joblib.load(VEC_SOCIAL)
+    vec_need = joblib.load(VEC_NEED)
+    vec_sector = joblib.load(VEC_SECTOR)
     
     df['objeto_social'] = df['objeto_social'].fillna('sin informacion')
     df['contexto_necesidad'] = df['contexto_necesidad'].fillna('sin informacion')
@@ -42,8 +42,8 @@ def generate_explanations(dataset_path):
     X_need = vec_need.transform(df['contexto_necesidad']).toarray()
     feat_need = pd.DataFrame(X_need, columns=[f"need_{c}" for c in vec_need.get_feature_names_out()])
     
-    X_sector = sector_encoder.transform(df[['sector']])
-    feat_sector = pd.DataFrame(X_sector, columns=sector_encoder.get_feature_names_out(['sector']))
+    X_sector = vec_sector.transform(df['sector']).toarray()
+    feat_sector = pd.DataFrame(X_sector, columns=[f"sec_{c}" for c in vec_sector.get_feature_names_out()])
     
     numeric_features = df[['Urgencia', 'Importancia', 'Complejidad', 'Plazo']]
     X = pd.concat([numeric_features, feat_sector, feat_social, feat_need], axis=1)
@@ -59,9 +59,10 @@ def generate_explanations(dataset_path):
     plt.figure(figsize=(10, 6))
     shap.summary_plot(shap_values, X, plot_type="bar", show=False, max_display=15)
     plt.title("Global Feature Importance (SHAP)")
-    os.makedirs("doc/images", exist_ok=True)
+    os.makedirs(os.path.join(DOC_DIR, "images"), exist_ok=True)
     plt.tight_layout()
-    plt.savefig("doc/images/shap_global_importance.png")
+    save_path = os.path.join(DOC_DIR, "images", "shap_global_importance.png")
+    plt.savefig(save_path)
     plt.close()
     
     # 2. Local Explanation Helper

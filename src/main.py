@@ -9,22 +9,18 @@ from typing import List, Optional
 # Import local modules
 try:
     from .optimizer import solve_optimization
+    from .data import load_processed_data
 except ImportError:
     try:
         from src.optimizer import solve_optimization
+        from src.data import load_processed_data
     except ImportError:
         from optimizer import solve_optimization
+        from data import load_processed_data
 
 app = FastAPI(title="Optimizador Estratégico")
 
-# CORS config
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# ... (CORS config)
 
 # Global data storage
 DATA_CACHE = {
@@ -33,39 +29,13 @@ DATA_CACHE = {
     "relations": {}
 }
 
-# Paths to data files
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed") # Assuming data.py saves here?
-# Let's check where data.py saves. It uses "data/processed" relative to run. 
-# The files are named "processed_necesidades.json", etc.
-
 def load_data():
-    """Loads JSON data into memory."""
+    """Loads JSON data into memory using centralized logic."""
     try:
-        # Paths based on data.py: SAVE_PATH = "data/processed"
-        # files: "data/processed_necesidades.json"
-        
-        # Check if files exist, if not, maybe run data.py?
-        # For now assume they exist as per previous context
-        
-        p_needs = os.path.join(DATA_DIR, "processed_necesidades.json")
-        p_plans = os.path.join(DATA_DIR, "processed_planes.json")
-        p_rels = os.path.join(DATA_DIR, "processed_relacion_necesidad_plan.json")
-
-        if not os.path.exists(p_needs):
-            print(f"File not found: {p_needs}. Attempting to run data extraction...")
-            # Ideally we would call load_data() from data.py here
-            # But let's assume valid state for now
-            pass
-
-        with open(p_needs, "r", encoding="utf-8") as f:
-            DATA_CACHE["needs"] = json.load(f)
-        with open(p_plans, "r", encoding="utf-8") as f:
-            DATA_CACHE["plans"] = json.load(f)
-        with open(p_rels, "r", encoding="utf-8") as f:
-            DATA_CACHE["relations"] = json.load(f)
-            
+        needs, plans, relations = load_processed_data()
+        DATA_CACHE["needs"] = needs
+        DATA_CACHE["plans"] = plans
+        DATA_CACHE["relations"] = relations
         print("Data loaded successfully.")
     except Exception as e:
         print(f"Error loading data: {e}")
@@ -75,14 +45,17 @@ def load_data():
 async def startup_event():
     load_data()
 
+from src.config import ALPHA_DEFAULT, BETA_DEFAULT, GAMMA_DEFAULT, DELTA_DEFAULT
+
 # Data Models
 class SolveRequest(BaseModel):
     selected_needs: List[str]
     max_actions: int = 3
-    alpha: float = 4.0
-    beta: float = 3.0
-    gamma: float = 0.5
-    delta: float = 1.0
+    objeto_social: Optional[str] = None
+    alpha: float = ALPHA_DEFAULT
+    beta: float = BETA_DEFAULT
+    gamma: float = GAMMA_DEFAULT
+    delta: float = DELTA_DEFAULT
 
 # API Endpoints
 @app.get("/needs")
@@ -96,7 +69,7 @@ async def solve(request: SolveRequest):
     if not DATA_CACHE["needs"]:
          raise HTTPException(status_code=500, detail="Data not loaded properly.")
     
-    print(f"Solving with {len(request.selected_needs)} needs and max_actions={request.max_actions}")
+    print(f"Solving with {len(request.selected_needs)} needs, max_actions={request.max_actions} and sector={request.objeto_social[:30] if request.objeto_social else 'N/A'}")
     try:
         obj_val, actions, assigns = solve_optimization(
             selected_needs_ids=request.selected_needs,
@@ -107,7 +80,8 @@ async def solve(request: SolveRequest):
             beta=request.beta,
             gamma=request.gamma,
             delta=request.delta,
-            max_actions=request.max_actions
+            max_actions=request.max_actions,
+            objeto_social=request.objeto_social
         )
         
         return {

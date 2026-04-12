@@ -2,13 +2,14 @@ import json
 import os
 from src.optimizer import solve_optimization
 
+from src.config import PROCESSED_BASE
+
 def load_json_data():
-    base_path = "data/processed"
-    with open(f"{base_path}_necesidades.json", "r") as f:
+    with open(f"{PROCESSED_BASE}_necesidades.json", "r") as f:
         needs = json.load(f)
-    with open(f"{base_path}_planes.json", "r") as f:
+    with open(f"{PROCESSED_BASE}_planes.json", "r") as f:
         plans = json.load(f)
-    with open(f"{base_path}_relacion_necesidad_plan.json", "r") as f:
+    with open(f"{PROCESSED_BASE}_relacion_necesidad_plan.json", "r") as f:
         rels = json.load(f)
     return needs, plans, rels
 
