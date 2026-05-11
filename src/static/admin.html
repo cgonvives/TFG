@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración — AsFin</title>
+    <meta name="description" content="Panel de administración para gestión de datos y configuración LLM del Optimizador Estratégico AsFin.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="images/logo_barra_web.png">
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+            const isLight = savedTheme === 'light' || (!savedTheme && systemPrefersLight);
+            document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-top">
+                <div class="logo-area">
+                    <i class="fa-solid fa-gear"></i>
+                    <h1>Panel de Administración</h1>
+                </div>
+                <button id="themeToggle" class="theme-toggle" aria-label="Cambiar tema">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+            <p class="subtitle">Gestión de datos y configuración del sistema</p>
+        </header>
+
+        <main>
+            <!-- ══════════════════════════════════════════════════ -->
+            <!--  SECTION 1: DATA MANAGEMENT                       -->
+            <!-- ══════════════════════════════════════════════════ -->
+            <section class="admin-section glass-panel">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-database"></i> Gestión de Datos</h2>
+                    <p>Suba un nuevo archivo Excel (.xlsx) para actualizar los datos del optimizador.</p>
+                </div>
+
+                <!-- Current data info -->
+                <div id="dataInfo" class="data-info-grid">
+                    <div class="info-card">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <div class="info-content">
+                            <span class="info-label">Archivo actual</span>
+                            <span id="currentFilename" class="info-value">—</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <div class="info-content">
+                            <span class="info-label">Última subida</span>
+                            <span id="lastUpload" class="info-value">—</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-brain"></i>
+                        <div class="info-content">
+                            <span class="info-label">Último entrenamiento</span>
+                            <span id="lastTraining" class="info-value">—</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <i class="fa-solid fa-list-check"></i>
+                        <div class="info-content">
+                            <span class="info-label">Datos cargados</span>
+                            <span id="dataStats" class="info-value">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload drop zone -->
+                <div id="dropZone" class="drop-zone">
+                    <input type="file" id="fileInput" accept=".xlsx" hidden>
+                    <div class="drop-zone-content">
+                        <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                        <p class="drop-text">Arrastra un archivo .xlsx aquí o <span class="drop-link">selecciona un archivo</span></p>
+                        <p class="drop-hint">Solo archivos Excel (.xlsx) con las hojas: Necesidades, Catálogo, Histórico, Objeto Social</p>
+                    </div>
+                </div>
+
+                <!-- Upload result -->
+                <div id="uploadResult" class="upload-result hidden">
+                    <div class="upload-result-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="upload-result-info">
+                        <span id="uploadFilename" class="upload-filename"></span>
+                        <span id="uploadDetails" class="upload-details"></span>
+                    </div>
+                </div>
+
+                <!-- Pipeline controls -->
+                <div class="pipeline-controls">
+                    <button id="trainBtn" class="primary-btn train-btn">
+                        <span class="btn-text"><i class="fa-solid fa-rocket"></i> Re-entrenar Modelos ML</span>
+                    </button>
+                    <div id="pipelineStatus" class="pipeline-status hidden">
+                        <div class="pipeline-progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                        <div class="pipeline-info">
+                            <span id="pipelineStep" class="pipeline-step">Iniciando…</span>
+                            <span id="pipelinePercent" class="pipeline-percent">0%</span>
+                        </div>
+                    </div>
+                    <div id="pipelineResult" class="pipeline-result hidden"></div>
+                </div>
+            </section>
+
+            <!-- ══════════════════════════════════════════════════ -->
+            <!--  SECTION 2: LLM CONFIGURATION                     -->
+            <!-- ══════════════════════════════════════════════════ -->
+            <section class="admin-section glass-panel">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-robot"></i> Configuración LLM</h2>
+                    <p>Configure el proveedor de IA para la clasificación automática de sectores.</p>
+                </div>
+
+                <!-- Provider selector -->
+                <div class="provider-selector">
+                    <label class="provider-label">Proveedor de IA:</label>
+                    <div class="provider-cards" id="providerCards">
+                        <div class="provider-card" data-provider="gemini">
+                            <div class="provider-icon gemini-icon">
+                                <i class="fa-solid fa-gem"></i>
+                            </div>
+                            <span class="provider-name">Gemini</span>
+                            <span class="provider-model">gemini-2.0-flash</span>
+                        </div>
+                        <div class="provider-card" data-provider="openai">
+                            <div class="provider-icon openai-icon">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <span class="provider-name">ChatGPT</span>
+                            <span class="provider-model">gpt-4o-mini</span>
+                        </div>
+                        <div class="provider-card" data-provider="anthropic">
+                            <div class="provider-icon anthropic-icon">
+                                <i class="fa-solid fa-atom"></i>
+                            </div>
+                            <span class="provider-name">Claude</span>
+                            <span class="provider-model">claude-3.5-haiku</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Key input -->
+                <div class="api-key-area">
+                    <label for="apiKeyInput" class="api-key-label">Clave API:</label>
+                    <div class="api-key-input-group">
+                        <input type="password" id="apiKeyInput" class="api-key-input" placeholder="Introduce tu clave API…">
+                        <button id="toggleKeyVisibility" class="key-toggle-btn" aria-label="Mostrar/ocultar clave">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <span id="apiKeyPreview" class="api-key-preview">No configurada</span>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="llm-actions">
+                    <button id="saveSettingsBtn" class="primary-btn">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Configuración
+                    </button>
+                    <button id="testLlmBtn" class="secondary-btn">
+                        <i class="fa-solid fa-vial"></i> Probar Conexión
+                    </button>
+                </div>
+
+                <!-- Connection status -->
+                <div id="llmStatus" class="llm-status hidden">
+                    <div class="llm-status-icon">
+                        <i id="llmStatusIcon" class="fa-solid fa-circle-question"></i>
+                    </div>
+                    <span id="llmStatusText" class="llm-status-text"></span>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Sistema de Optimización Estratégica</p>
+        </footer>
+    </div>
+
+    <a href="index.html" class="back-home-btn"><i class="fa-solid fa-house"></i> Volver al Portal</a>
+    <script src="theme.js?v=2.0"></script>
+    <script src="admin.js?v=2.0"></script>
+</body>
+
+</html>

@@ -76,4 +76,5 @@ def train_ml_model(dataset_path):
     print(f"\nAll artifacts saved to {os.path.dirname(MODEL_XGB)}/ folder.")
 
 if __name__ == "__main__":
-    train_ml_model("data/ml_dataset_final.csv")
+    from src.config import ML_DATASET_FINAL
+    train_ml_model(ML_DATASET_FINAL)

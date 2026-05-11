@@ -332,7 +332,7 @@ def load_processed_data():
             relations = json.load(f)
         return needs, plans, relations
     except FileNotFoundError as e:
-        print(f"Error: JSON files not found in {data_dir}. Run data.py first.")
+        print(f"Error: JSON files not found at {PROCESSED_BASE}. Run data.py first.")
         raise e
 
 if __name__ == "__main__":

@@ -5,14 +5,14 @@ import os
 import json
 import sys
 import io
-from llm_classifier import classify_sector_llm
 
 # Force utf-8 output for Windows
 if sys.stdout.encoding != 'utf-8':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-from src.utils import clean_text, detect_sector
-from src.config import ML_DATASET_FINAL
+from src.utils import clean_text
+from src.optimizer import detect_sector
+from src.config import ML_DATASET_FINAL, EXCEL_FILE
 
 def explore_and_unify_data(file_path):
     # Print safe name
@@ -153,5 +153,4 @@ def explore_and_unify_data(file_path):
     return df_final
 
 if __name__ == "__main__":
-    NEW_FILE = glob.glob("data/Planes de acción - TFG v2.xlsx")[0]
-    df_final = explore_and_unify_data(NEW_FILE)
+    df_final = explore_and_unify_data(EXCEL_FILE)

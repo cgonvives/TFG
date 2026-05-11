@@ -81,8 +81,7 @@ def learn_optimal_weights(dataset_path):
     print(f"\nLearned weights saved to {LEARNED_HEURISTICS}")
 
 if __name__ == "__main__":
-    dataset_path = "data/ml_dataset_final.csv"
-    if os.path.exists(dataset_path):
-        learn_optimal_weights(dataset_path)
+    if os.path.exists(ML_DATASET_FINAL):
+        learn_optimal_weights(ML_DATASET_FINAL)
     else:
-        print("Dataset not found. Run ml_data_explorer.py first.")
+        print(f"Dataset not found at {ML_DATASET_FINAL}. Run ml_data_explorer.py first.")
