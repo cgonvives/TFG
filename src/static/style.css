@@ -706,12 +706,30 @@ body {
     animation: slideInRight 0.5s ease-out forwards;
 }
 
+.action-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
 .action-card h4 {
     font-size: 0.85rem;
     color: var(--text-muted);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+.period-badge {
+    color: var(--accent);
+    background: rgba(255, 140, 0, 0.1);
+    font-weight: 600;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(255, 140, 0, 0.2);
 }
 
 .action-card p {

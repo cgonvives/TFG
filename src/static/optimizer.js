@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const result = await response.json();
+            console.log('Optimization result:', result);
             renderResults(result);
         } catch (error) {
             showError(error.message);
@@ -202,11 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const actionsList = document.getElementById('actionsList');
         actionsList.innerHTML = '';
-        actions.forEach(action => {
+        actions.forEach((action, index) => {
             const el = document.createElement('div');
             el.className = 'action-card';
             el.innerHTML = `
-                <h4>Acción Recomendada</h4>
+                <div class="action-card-header">
+                    <h4>Acción ${index + 1}</h4>
+                    <span class="badge period-badge"><i class="fa-solid fa-clock"></i> Plazo: ${action.period || 'Consultar'} ${action.period ? (action.period === 1 ? 'mes' : 'meses') : ''}</span>
+                </div>
                 <p><strong>${action.id}</strong>: ${action.description}</p>
             `;
             actionsList.appendChild(el);

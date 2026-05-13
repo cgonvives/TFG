@@ -11,18 +11,27 @@ Output:
 
 import os
 import sys
-from PyInstaller.utils.hooks import collect_submodules
+import pulp
+from PyInstaller.utils.hooks import collect_submodules, collect_all
+
+# Collect everything for critical libraries
+# collect_all returns a tuple of (datas, binaries, hidden_imports)
+xg_datas, xg_binaries, xg_hidden = collect_all('xgboost')
+sk_datas, sk_binaries, sk_hidden = collect_all('sklearn')
+
+# Locate pulp solver binaries
+pulp_path = os.path.dirname(pulp.__file__)
+pulp_solver_dir = os.path.join(pulp_path, 'solverdir')
 
 # Collect all submodules that PyInstaller may miss
 hidden = (
     collect_submodules('uvicorn') +
-    collect_submodules('xgboost') +
-    collect_submodules('sklearn') +
-    collect_submodules('scipy') +
     collect_submodules('pulp') +
     collect_submodules('starlette') +
     collect_submodules('pydantic') +
     collect_submodules('pydantic_core') +
+    xg_hidden +
+    sk_hidden +
     [
         'src', 'src.main', 'src.config', 'src.data', 'src.optimizer',
         'src.llm_classifier', 'src.llm_router', 'src.settings_manager',
@@ -37,7 +46,7 @@ hidden = (
 a = Analysis(
     ['launcher.py'],
     pathex=['.'],
-    binaries=[],
+    binaries=xg_binaries + sk_binaries,
     datas=[
         # Frontend static files (read-only inside the exe)
         ('src/static', 'src/static'),
@@ -56,7 +65,9 @@ a = Analysis(
         ('models/vec_need.pkl', 'models'),
         ('models/vec_sector.pkl', 'models'),
         ('models/vec_social.pkl', 'models'),
-    ],
+        # PuLP Solvers (Critical for .exe optimization)
+        (pulp_solver_dir, 'pulp/solverdir'),
+    ] + xg_datas + sk_datas,
     hiddenimports=hidden,
     hookspath=[],
     hooksconfig={},

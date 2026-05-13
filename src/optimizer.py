@@ -3,6 +3,7 @@ import logging
 import joblib
 import pandas as pd
 import os
+import sys
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -12,7 +13,7 @@ from src.utils import load_sector_cache, save_sector_cache, remove_accents, clea
 from src.config import (
     MODEL_XGB, VEC_SOCIAL, VEC_NEED, VEC_SECTOR, PLAN_ENCODER, FEATURE_NAMES,
     LEARNED_HEURISTICS, ALPHA_DEFAULT, BETA_DEFAULT, GAMMA_DEFAULT, DELTA_DEFAULT,
-    ML_WEIGHT_DEFAULT
+    ML_WEIGHT_DEFAULT, resource_path
 )
 
 # Global cache for sectors
@@ -234,7 +235,23 @@ def solve_optimization(selected_needs_ids, needs_data, plans_data, relations_dat
     prob += pulp.lpSum(y[j] for j in A_set) <= max_actions, "Max_Actions"
 
     # Solve
-    solver = pulp.PULP_CBC_CMD(msg=False)
+    if hasattr(sys, '_MEIPASS'):
+        # In the PyInstaller bundle, we include the pulp solverdir.
+        # We try to find the CBC executable for 64-bit or 32-bit Windows.
+        cbc_64 = resource_path(os.path.join('pulp', 'solverdir', 'cbc', 'win', 'i64', 'cbc.exe'))
+        cbc_32 = resource_path(os.path.join('pulp', 'solverdir', 'cbc', 'win', 'i32', 'cbc.exe'))
+
+        if os.path.exists(cbc_64):
+            # Using COIN_CMD because PULP_CBC_CMD doesn't allow path in some versions
+            solver = pulp.COIN_CMD(path=cbc_64, msg=False)
+        elif os.path.exists(cbc_32):
+            solver = pulp.COIN_CMD(path=cbc_32, msg=False)
+        else:
+            logger.warning("Bundled CBC solver not found at expected paths. Falling back to default.")
+            solver = pulp.PULP_CBC_CMD(msg=False)
+    else:
+        solver = pulp.PULP_CBC_CMD(msg=False)
+
     try:
         prob.solve(solver)
     except Exception as e:
@@ -252,31 +269,57 @@ def solve_optimization(selected_needs_ids, needs_data, plans_data, relations_dat
     # Extract Results
     objective_value = pulp.value(prob.objective)
     
-    # Track contributions per action for sorted output
-    plan_contributions = {}
+    # Calculate priority stats for each selected action
+    # Since an action can cover multiple needs, we take the max urgency/importance
+    action_stats = {}
     for (i, j) in R_set:
         if pulp.value(x[(i, j)]) > 0.5:
-            # Recompute total weight for this (need, plan)
+            if j not in action_stats:
+                action_stats[j] = {
+                    'max_urgencia': needs_data[i]['urgencia'],
+                    'max_importancia': needs_data[i]['importancia'],
+                    'contribution': 0
+                }
+            else:
+                action_stats[j]['max_urgencia'] = max(action_stats[j]['max_urgencia'], needs_data[i]['urgencia'])
+                action_stats[j]['max_importancia'] = max(action_stats[j]['max_importancia'], needs_data[i]['importancia'])
+            
+            # Recompute total weight for this (need, plan) for tie-breaking
             w_ij = (alpha * needs_data[i]['urgencia'] + 
                     beta * needs_data[i]['importancia'] - 
                     gamma * plans_data[j]['plazo_ejecucion'] - 
                     delta * plans_data[j]['complejidad'])
             ml_boost = ml_weight * ml_scores[(i, j)]
-            contribution = w_ij + ml_boost
-            plan_contributions[j] = plan_contributions.get(j, 0) + contribution
+            action_stats[j]['contribution'] += (w_ij + ml_boost)
 
     recommended_actions = []
-    # Sort Actions by total contribution (High to Low)
-    sorted_A = sorted(A_set, key=lambda j: plan_contributions.get(j, -1e9) if pulp.value(y[j]) > 0.5 else -2e9, reverse=True)
+    # NEW SORTING CRITERIA:
+    # 1. Max Urgency of covered needs (Desc)
+    # 2. Max Importance of covered needs (Desc)
+    # 3. Complexity (Asc - Easier first)
+    # 4. Period (Asc - Faster first)
+    # 5. Total Contribution (Desc - Tie breaker)
+    selected_A = [j for j in A_set if pulp.value(y[j]) > 0.5]
+    sorted_A = sorted(
+        selected_A,
+        key=lambda j: (
+            -action_stats[j]['max_urgencia'],
+            -action_stats[j]['max_importancia'],
+            plans_data[j]['complejidad'],
+            plans_data[j]['plazo_ejecucion'],
+            -action_stats[j]['contribution']
+        )
+    )
     
     for j in sorted_A:
-        if pulp.value(y[j]) > 0.5:
-            recommended_actions.append({
-                "id": j,
-                "description": plans_data[j]['descripcion'],
-                "period": plans_data[j]['plazo_ejecucion'],
-                "complexity": plans_data[j]['complejidad']
-            })
+        recommended_actions.append({
+            "id": j,
+            "description": plans_data[j]['descripcion'],
+            "period": plans_data[j]['plazo_ejecucion'],
+            "complexity": plans_data[j]['complejidad'],
+            "priority_urgency": action_stats[j]['max_urgencia'],
+            "priority_importance": action_stats[j]['max_importancia']
+        })
 
     assignments = []
     for (i, j) in R_set:

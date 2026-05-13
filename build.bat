@@ -23,7 +23,25 @@ pip install -r requirements.txt --quiet
 REM Build the executable
 echo [3/3] Building AsFin_Optimizer.exe...
 echo.
+
+REM Try to remove previous build artifacts to avoid permission issues with --clean
+if exist "build" (
+    echo [INFO] Removing old build directory...
+    rd /s /q "build" 2>nul
+)
+
 pyinstaller asfin.spec --clean --noconfirm
+
+if errorlevel 1 (
+    echo.
+    echo [ERROR] PyInstaller failed. 
+    echo [HINT] If you see "Access Denied", try:
+    echo   1. Closing any running instances of AsFin_Optimizer.
+    echo   2. Pausing OneDrive sync temporarily.
+    echo   3. Running this script as Administrator.
+    pause
+    exit /b 1
+)
 
 echo.
 if exist "dist\AsFin_Optimizer.exe" (
